@@ -79,9 +79,20 @@ router.get( '/logout', ( req, res ) => {
     res.redirect( '/' );
 } );
 
-// path must route to firebase lambda - soon
+router.get( '/add-bot', ( req, res ) => {
+  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
+  res.redirect( `${ discord.api }oauth2/authorize` +
+    `?client_id=${ oauth2.client_id }` +
+    '&scope=bot' +
+    '&permissions=268436496' +
+    `&guild_id=${ guild.id }` +
+    '&disable_guild_select=false' 
+  );
+} );
+
+// @TODO path must route to firebase lambda - soon
 // app.use( '/', ( req, res ) => res.sendFile( path.join( __dirname, '../index.html' ) ) );
-// this will be done via rewriting in firebase i believe?
-app.use( '/api', router )
+// @TODO this will be done via rewriting in firebase i believe?
+app.use( '/', router );
 
 module.exports = app;
