@@ -1,15 +1,19 @@
 const express = require( 'express' );
 const axios = require( 'axios' );
 
-const config = require( './config.json' );
-const { oauth2, bot, guild, session } = config;
+const { 
+  oauth2, 
+  discord, 
+  guild, 
+  session 
+} = require( './config.json' );
 const app = express();
-app.use( require( 'express-session' )( config.session ) );
+app.use( require( 'express-session' )( session ) );
 
 const router = express.Router();
 // const router = require( './routes' );
 
-// test stuff
+// test
 router.get( '/schmoomu', ( req, res ) => { 
   res.writeHead( 200, { 'Content-Type': 'text/html' } );
   res.write( '<h1>Hello from Schmoomu in tha house!</h1>' );
@@ -18,49 +22,55 @@ router.get( '/schmoomu', ( req, res ) => {
 router.get( '/check-deux', ( req, res ) => res.json( { route: req.originalUrl } ) );
 router.post( '/check', ( req, res ) => res.json( { postBody: req.body } ) );
 
-
-router.get( '/', async ( req, res ) => {
-  if( !req.session.bearer_token ) {
-    return res.redirect( '/login' );
+router.get( '/', ( req, res ) => {
+  console.log( req.session.bearer_token );
+  if ( req.session.bearer_token ) {
+    // Redirect to react app
+    res.redirect( '/app' );
   };
 } );
 
 router.get( '/login/callback', async ( req, res ) => {
-    const accessCode = req.query.code;
-    if ( !accessCode ) {
-      return res.send( 'No access code specified' );
-    };
+  const accessCode = req.query.code;
+  if ( !accessCode ) {
+    return res.send( 'No access code specified' );
+  };
 
-    const data = {
-      client_id: oauth2.client_id, 
-      client_secret: oauth2.secret, 
-      grant_type: 'authorization_code', 
-      code: accessCode, 
-      redirect_uri: oauth2.redirect_uri, 
-      scope: 'identify' // not needed
-    };    
+  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
+  const data = {
+    client_id: oauth2.client_id, 
+    client_secret: oauth2.secret, 
+    grant_type: 'authorization_code', 
+    code: accessCode, 
+    redirect_uri: redirectUrl, 
+    scope: 'identify' // not needed
+  };    
 
-    try {
-      const json = ( await axios.post( 
-        'https://discord.com/api/oauth2/token', 
-        new URLSearchParams( data ), 
-        { headers: { 
-          'Content-Type' : 'application/x-www-form-urlencoded' 
-        } } 
-      ) ).data;
-      req.session.bearer_token = json.access_token;
-    } catch ( err ) {
-      console.log( 'err: ', err );
-    };
+  try {
+    const json = ( await axios.post( 
+      'https://discord.com/api/oauth2/token', 
+      new URLSearchParams( data ), 
+      { headers: { 
+        'Content-Type' : 'application/x-www-form-urlencoded' 
+      } } 
+    ) ).data;
+    req.session.bearer_token = json.access_token;
+  } catch ( err ) {
+    console.log( 'err: ', err );
+  };
 
-    res.redirect( '/' );
+  console.log( 'redirecting back home - login successful' );
+  res.redirect( '/app' );
 } );
 
 router.get( '/login', ( req, res ) => {
-  res.redirect( `https://discord.com/api/oauth2/authorize` +
+  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
+  res.redirect( `${ discord.api }oauth2/authorize` +
     `?client_id=${ oauth2.client_id }` +
-    `&redirect_uri=${ encodeURIComponent( oauth2.redirect_uri ) }` +
-    `&resonse_type=code&scope=${ encodeURIComponent( oauth2.scopes.join( ' ' ) ) }` )
+    `&redirect_uri=${ encodeURIComponent( redirectUrl ) }` +
+    `&response_type=code` +
+    `&scope=${ encodeURIComponent( oauth2.scopes.join( ' ' ) ) }` 
+  );
 } );
 
 router.get( '/logout', ( req, res ) => {
