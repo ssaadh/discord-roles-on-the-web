@@ -7,6 +7,19 @@ const {
   guild, 
   session 
 } = require( './config.json' );
+
+const { 
+  getUser, 
+  getRoles, 
+  getUsersRoles, 
+  postProcess 
+} = require( './routeFunctions' );
+
+const { 
+  getNotionCategories, 
+  getNotionRoles 
+} = require( './notion' );
+
 const app = express();
 app.use( require( 'express-session' )( session ) );
 
@@ -90,9 +103,22 @@ router.get( '/add-bot', ( req, res ) => {
   );
 } );
 
+const api = express.Router();
+const notion = express.Router();
+
+notion.route( '/notion/categories' ).get( getNotionCategories );
+notion.route( '/notion/roles' ).get( getNotionRoles );
+
+api.route( '/user' ).get( getUser );
+api.route( '/user-roles/:userId' ).get( getUsersRoles );
+api.route( '/roles' ).post( getRoles );
+api.route( '/process' ).post( postProcess );
+
 // @TODO path must route to firebase lambda - soon
 // app.use( '/', ( req, res ) => res.sendFile( path.join( __dirname, '../index.html' ) ) );
 // @TODO this will be done via rewriting in firebase i believe?
 app.use( '/', router );
+app.use( '/api', api );
+app.use( '/notion', notion );
 
 module.exports = app;
