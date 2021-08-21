@@ -6,6 +6,7 @@
     "server": "nodemon server/index.js | pino-colada"
   },
   "dependencies": {
+    "@notionhq/client": "^0.2.4",
     "axios": "~0.21.1",
     "express": "~4.17.1",
     "express-session": "~1.17.2",
