@@ -6,7 +6,7 @@ import {
   Link
 } from "react-router-dom";
 
-import Base from "./components/Base";
+import Home from "./components/Home";
 import User from "./components/User";
 import Roles from './components/RolesDashboard';
 
@@ -20,7 +20,7 @@ function App() {
               <Link to="/">Home</Link>
             </li>
             <li>
-              <Link to="/user">User</Link>
+              <Link to="/app">Dashboard</Link>
             </li>
             <li>
               <Link to="/channels">Channels</Link>
@@ -31,14 +31,14 @@ function App() {
         {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
         <Switch>
-          <Route path="/user">
+          <Route path="/app">
             <User />
           </Route>
           <Route path="/channels">
             <Roles />
           </Route>
           <Route path="/">
-            <Base />
+            <Home />
           </Route>
         </Switch>
       </div>
