@@ -11,7 +11,13 @@ const {
   grabUser 
 } = require( './logic' );
 
-const wait = ( ms ) => new Promise( resolve => setTimeout( resolve, ms ) );
+const {
+  getDiscordUsersRoles, 
+  addRole, 
+  deleteRole, 
+  goThroughRoles, 
+  returnObj 
+} = require( './roleUtilities' );
 
 // /user
 const getUser = async ( req, res ) => {
@@ -45,68 +51,8 @@ const getUsersRoles = async ( req, res ) => {
   const userId = req.param( 'userId' );
   if ( !req.param( 'userId' ) ) {
     console.error( 'no param for userroles' );
-    return;
   };
-  console.log('GET user roles for ' + req.params.userid )
 
-  const result = await axios.get( discord.api + 'guilds/' + guild.id + '/members/' + userId,
-    {
-      headers: {
-        'Authorization': 'Bot ' + bot.token
-      }
-    } 
-  );
-
-  const roles = await mergeRoles( result[ 'roles' ] );
-  res.json( result[ 'roles' ] );
-};
-
-// @TODO dont allow adding of privileged roles.
-const blockedRoles = ( arr, blockedArr ) => {
-  return arr.filter( han => 
-    !blockedArr.some( solo => han.id === solo.id )
-  );
-};
-
-const roleApi = `guilds/${ guild.id }/members/${ userId }/roles/`;
-
-const addRole = async ( roleId ) => {
-  try {
-    const result = await axios.put( discord.api + roleApi + roleId, 
-    {
-      headers: {
-        'Authorization': 'Bot ' + BOT_SECRET
-      }
-    } );
-
-    if ( result.status === 429 ) {
-      console.log( 'rate limited' );
-    };
-  } catch (err ) {
-    console.error( err )
-    res.status( 400 ); // @TODO
-    return;
-  };
-};
-
-const deleteRole = async ( roleId ) => {
-  try {
-    const result = await axios.delete( discord.api + roleApi + roleId,
-    '', 
-    {
-      headers: {
-        'Authorization': 'Bot ' + BOT_SECRET
-      }
-    } );
-
-    if ( result.status === 429 ) {
-      console.log( 'rate limited' );
-    };
-  } catch (err ) {
-    console.error( err )
-    res.status( 400 ); //@TODO
-    return;
-  };
 };
 
 // /process
