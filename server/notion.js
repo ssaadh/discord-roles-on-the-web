@@ -1,6 +1,8 @@
 const { Client } = require( '@notionhq/client' );
 const { notion: notionConfig } = require( './config.json' );
 
+const { securityCheck } = require( './utilities' );
+
 // Initializing a client
 const notion = new Client( {
   auth: notionConfig.token 
@@ -83,12 +85,15 @@ const addNotionCategoriesToRoles = async ( cats = [], roles = [] ) => {
 
 // /roles
 const getNotionRoles = async ( req, res ) => {
+  if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
+  
   const obj = await notionRoles();
   res.json( obj );
 };
 
 // /categories
 const getNotionCategories = async ( req, res ) => {
+  if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
   const obj = await notionCategories();
   res.json( obj );
 };

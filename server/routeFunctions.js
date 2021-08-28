@@ -13,6 +13,10 @@ const {
 } = require( './logic' );
 
 const {
+  securityCheck 
+} = require( './utilities' );
+
+const {
   getDiscordUsersRoles, 
   addRole, 
   deleteRole, 
@@ -58,10 +62,8 @@ const getUsersRoles = async ( req, res ) => {
 
 // /process
 const postProcess = async ( req, res ) => {
-  if ( !req.session.bearer_token ) {
-    res.status( 401 );
-    return;
-  };
+  if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
+  
   let { userId, add, remove } = req.body;
   add = add ? add : [];
   remove = remove ? remove : [];

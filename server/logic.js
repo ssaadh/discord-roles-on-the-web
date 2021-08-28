@@ -10,6 +10,10 @@ const {
   addNotionCategoriesToRoles 
 } = require( './notion' );
 
+const {
+  securityCheck, 
+  isGuildMember 
+} = require( './utilities' );
 
 const grabRoles = async () => {
   let response;
@@ -72,18 +76,17 @@ const getDiscordUserGuilds = async ( bearerToken ) => {
 };
 
 const grabUser = async ( req, res ) => {
+  if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
 
-  const isAZoomer = ( guildsArray, guildId ) => 
-    guildsArray.filter( guild => guild[ 'id' ] === guildID ).length > 0;
   const user = await getDiscordUser( req.session.bearer_token );
   const guilds = await getDiscordUserGuilds( req.session.bearer_token );
 
-    isAZoomer: isAZoomer( guilds, guild.id ) 
   return {
     id: user.id, 
     username: user.username, 
     discriminator: user.discriminator, 
     avatar: user.avatar, 
+    isAZoomer: isGuildMember( guilds, guild.id ) 
   };
 };
 
