@@ -8,26 +8,26 @@ const notion = new Client( {
 
 const excludeAdmin = ( arrObj ) => 
   arrObj.filter( solo => 
-    solo != null && solo.category.toLowerCase() != 'admin/helpers'
+    solo != null && solo.category.toLowerCase() != 'Helpers/Admin'.toLowerCase() 
   );
 
 const parseNotionDb = ( obj ) => {
-  const arrMap = obj[ 'results' ].map( solo => { 
-    const props = solo[ 'properties' ];
-    const catRoot = props[ 'Tags' ];
-    const nameRoot = props[ 'Name' ];
-    const colorRoot = props.hasOwnProperty( 'Color' ) ? props[ 'Color' ] : null;
+  const arrMap = obj.results.map( solo => { 
+    const props = solo.properties;
+    const catRoot = props.Tags;
+    const nameRoot = props.Name;
+    const colorRoot = props.hasOwnProperty( 'Color' ) ? props.Color : null;
 
-    const catArr = catRoot[ catRoot[ 'type' ] ];
-    const category = ( Array.isArray( catArr ) && catArr.length ) ? catArr[ 0 ][ 'name' ] : '';
-    // const color = ( Array.isArray( catArr ) && catArr.length ) ? catArr[ 0 ][ 'color' ] : '';
+    const catObj = catRoot[ catRoot.type ];
+    const category = checkNotionObject( catObj ) ? catObj.name : '';
+    const nameArr = nameRoot[ nameRoot.type ];
+    const name = ( Array.isArray( nameArr ) && nameArr.length ) ? nameArr[ 0 ].plain_text : '';
 
-    const nameArr = nameRoot[ nameRoot[ 'type' ] ];
-    const name = ( Array.isArray( nameArr ) && nameArr.length ) ? nameArr[ 0 ][ 'plain_text' ] : '';
-
-    const colorArr = colorRoot[ colorRoot[ 'type' ] ];
-    const color = ( Array.isArray( colorArr ) && colorArr.length ) ? colorArr[ 0 ][ 'name' ] : '';
-    
+    let color;
+    if ( colorRoot !== null ) {
+      const colorObj = colorRoot[ colorRoot.type ];
+      color = checkNotionObject( colorObj ) ? colorObj.name : '';
+    };
     if ( category || name ) {
       if ( color ) {
         return { 
@@ -51,15 +51,15 @@ const parseNotionDb = ( obj ) => {
 
 const notionRoles = async () => {
   const result = await notion.databases.query( {
-    database_id: notionConfig.roles
+    database_id: notionConfig.roles 
   } );
 
   return parseNotionDb( result );
 };
 
 const notionCategories = async () => {
-  const result = await notion.databases.query( {
-    database_id: notionConfig.role_categories
+  const result = await notion.databases.query( { 
+    database_id: notionConfig.role_categories 
   } );
 
   return parseNotionDb( result );
