@@ -1,0 +1,42 @@
+777A4955-FC50-430A-B8F4-68D3E2057F56|7|false|%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%{
+  "encodedBy" : 7,
+  "projectID" : "777A4955-FC50-430A-B8F4-68D3E2057F56",
+  "data" : {
+    "documentVersionCode" : 2,
+    "id" : "777A4955-FC50-430A-B8F4-68D3E2057F56",
+    "options" : {
+      "holder" : {
+        "project.options.storeEncrypted" : "MA==",
+        "project.options.description" : "",
+        "project.options.zoomLevel" : "MTAw",
+        "project.options.secureValuesStoreEncrypted" : "MQ==",
+        "project.options.title" : "RGlzY29yZCBSb2xlcw=="
+      },
+      "flags" : {
+
+      },
+      "storeEncrypted" : true
+    },
+    "configurations" : [
+      {
+        "id" : "7kd2ge",
+        "name" : "Default",
+        "selected" : true,
+        "variables" : {
+          "type" : 0,
+          "elements" : [
+
+          ]
+        }
+      }
+    ],
+    "nodeEntries" : [
+
+    ],
+    "linkEntries" : [
+
+    ]
+  },
+  "encrypted" : false,
+  "versionCode" : 2
+}
