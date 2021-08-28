@@ -11,6 +11,9 @@ const excludeAdmin = ( arrObj ) =>
     solo != null && solo.category.toLowerCase() != 'Helpers/Admin'.toLowerCase() 
   );
 
+const checkNotionObject = ( obj ) => 
+  ( typeof obj == 'object' ) && ( Object.keys( obj ).length > 1 ) && obj.hasOwnProperty( 'name' )
+
 const parseNotionDb = ( obj ) => {
   const arrMap = obj.results.map( solo => { 
     const props = solo.properties;
@@ -29,7 +32,7 @@ const parseNotionDb = ( obj ) => {
       color = checkNotionObject( colorObj ) ? colorObj.name : '';
     };
     if ( category || name ) {
-      if ( color ) {
+      if ( colorRoot && color ) {
         return { 
           category, 
           name, 
@@ -69,10 +72,13 @@ const addNotionCategoriesToRoles = async ( cats = [], roles = [] ) => {
   const catsArr = ( Array.isArray( cats ) && cats.length ) ? cats : await notionCategories();
   const rolesArr = ( Array.isArray( roles ) && roles.length ) ? roles : await notionRoles();
 
-  return rolesArr.map( solo => { 
-    const catRow = catsArr.find( han => solo.category.toLowerCase() === han.name.toLowerCase() );
-    return { ...solo, category: catRow.name, color: catRow.color };
+  // Aren't categories already added to roles. What is the point of this then?
+  // Color is being added, but the category is checking for matching so why overwrite a dupe?
+  const merger = rolesArr.map( solo => { 
+    const catRow = catsArr.find( han => solo.category.toLowerCase() === han.name.toLowerCase() );    
+    return ( catRow != undefined ) ? { ...solo, category: catRow.name, color: catRow.color } : null;
   } );
+  return merger.filter( han => han != null );
 };
 
 // /roles
