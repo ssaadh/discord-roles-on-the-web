@@ -7,8 +7,9 @@ const {
 } = require( './config.json' );
 
 const { 
-  mergeRoles, 
-  grabUser 
+  filterRoles, 
+  grabUser, 
+  getDiscordUser 
 } = require( './logic' );
 
 const {
@@ -21,38 +22,38 @@ const {
 
 // /user
 const getUser = async ( req, res ) => {
-  if ( !req.session.bearer_token ) {
-    res.status( 401 );
-    return;
+  const results = await grabUser( req, res );
+  if ( results ) { 
+    res.json( results );
+  } else {
+    res.status( 400 ).end(); return;
   };
-
-  const results = await grabUser( req );
-  res.json( results );
 };
 
 // /roles
 const getRoles = async ( req, res ) => {
-  if ( !req.session.bearer_token ) {
-    res.status( 401 );
-    return;
+  if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
+  const results = await filterRoles();
+  if ( results ) { 
+    res.json( results );
+  } else {
+    res.status( 400 ).end(); return;
   };
-
-  const results = await mergeRoles();
-  res.json( results );
 };
 
 // '/user-roles/:userId'
 const getUsersRoles = async ( req, res ) => {
-  if ( !req.session.bearer_token ) {
-    res.status( 401 );
-    return;
-  };  
+  if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
 
-  const userId = req.param( 'userId' );
-  if ( !req.param( 'userId' ) ) {
+  const userId = req.params.userId;
+  if ( !userId ) {
     console.error( 'no param for userroles' );
+    res.status( 400 ).end(); return;
   };
 
+  const result = await getDiscordUsersRoles( userId );
+  const roles = await filterRoles( result.data.roles );  
+  res.json( roles );
 };
 
 // /process
