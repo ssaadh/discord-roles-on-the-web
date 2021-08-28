@@ -1,5 +1,7 @@
 const express = require( 'express' );
 const axios = require( 'axios' );
+const bodyParser = require( 'body-parser' )
+
 const { 
   grabUser 
 } = require( './logic' );
@@ -11,23 +13,9 @@ const {
   session 
 } = require( './config.json' );
 
-const { 
-  getUser, 
-  getRoles, 
-  getUsersRoles, 
-  postProcess 
-} = require( './routeFunctions' );
-
-const { 
-  getNotionCategories, 
-  getNotionRoles 
-} = require( './notion' );
-
 const app = express();
 app.use( require( 'express-session' )( session ) );
-
 const router = express.Router();
-// const router = require( './routes' );
 
 // Verify some basics are working
 router.get( '/server', async ( req, res ) => {
@@ -104,20 +92,38 @@ router.get( '/add-bot', ( req, res ) => {
   );
 } );
 
-const api = express.Router();
-const notion = express.Router();
 
-notion.route( '/notion/categories' ).get( getNotionCategories );
-notion.route( '/notion/roles' ).get( getNotionRoles );
+// 
+// All Routing
+// 
+
+const { 
+  getUser, 
+  getRoles, 
+  getUsersRoles, 
+  postProcess 
+} = require( './routeFunctions' );
+
+const { 
+  getNotionCategories, 
+  getNotionRoles 
+} = require( './notion' );
+
+const notion = express.Router();
+const api = express.Router();
+
+notion.route( '/categories' ).get( getNotionCategories );
+notion.route( '/roles' ).get( getNotionRoles );
 
 api.route( '/user' ).get( getUser );
 api.route( '/user-roles/:userId' ).get( getUsersRoles );
-api.route( '/roles' ).post( getRoles );
-api.route( '/process' ).post( postProcess );
+api.route( '/roles' ).get( getRoles );
+const jsonParser = bodyParser.json()
+api.post( '/process', jsonParser, postProcess );
 
 // @TODO path must route to firebase lambda - soon
-// app.use( '/', ( req, res ) => res.sendFile( path.join( __dirname, '../index.html' ) ) );
 // @TODO this will be done via rewriting in firebase i believe?
+// app.use( '/', ( req, res ) => res.sendFile( path.join( __dirname, '../index.html' ) ) );
 app.use( '/', router );
 app.use( '/api', api );
 app.use( '/notion', notion );
