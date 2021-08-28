@@ -4,5 +4,7 @@
 			"path": "."
 		}
   ],
-  "settings": {}
+  "settings": {
+    "bloop.openOnSuggestionsAvailable": false
+  }
 }
