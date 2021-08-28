@@ -87,17 +87,35 @@ const grabUser = async ( req, res ) => {
   };
 };
 
-const mergeRoles = async ( rolesArr = [] ) => {
+const mergeNotionDiscordRoles = async () => {
   const notionRoles = await addNotionCategoriesToRoles();
-  const roles = ( Array.isArray( rolesArr ) && rolesArr.length ) ? rolesArr : await getRoles();
+  const discordRoles = await grabRoles();
 
-  return notionRoles.map( solo => { 
-    const currRole = roles.find( han => han.name.toLowerCase() === solo.toLowerCase() );
-    return { ...solo, ...currRole };
-  } );
+  const mergedRoles = notionRoles.map( solo => { 
+    const currRole = discordRoles.find( han => 
+      han.name.toLowerCase() === solo.name.toLowerCase() 
+    );
+    return currRole != undefined ? { ...solo, ...currRole } : null;
+  } )
+
+  return mergedRoles.filter( han => han != null );
+};
+
+const filterRoles = async ( rolesArr = [] ) => {
+  const roles = await mergeNotionDiscordRoles();
+  return ( Array.isArray( rolesArr ) && rolesArr.length ) 
+  ? 
+    roles.filter( han => 
+      rolesArr.find( solo => 
+        han.id == solo 
+      ) 
+    )
+  : 
+    roles;
 };
 
 module.exports = { 
-  mergeRoles, 
+  filterRoles, 
   grabUser, 
+  getDiscordUser 
 };
