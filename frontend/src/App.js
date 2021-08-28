@@ -7,6 +7,8 @@ import {
 } from "react-router-dom";
 
 import Home from "./components/Home";
+import Error from "./components/Error";
+
 import User from "./components/User";
 import Roles from './components/RolesDashboard';
 
@@ -39,6 +41,9 @@ function App() {
           </Route>
           <Route path="/">
             <Home />
+          </Route>
+          <Route path="/a-mistake">
+            <Error />
           </Route>
         </Switch>
       </div>

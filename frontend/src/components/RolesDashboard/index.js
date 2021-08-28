@@ -31,12 +31,12 @@ function Roles() {
     setUser( fetchUser );
     
     const fetchCats = ( await
-      axios.post( '/notion/categories' )
+      axios.get( '/notion/categories' )
     ).data;
     setCats( fetchCats );
 
     const fetchRoles = ( await
-      axios.post( '/notion/roles' )
+      axios.get( '/roles' )
     ).data;
     setRoles( fetchRoles );
     
