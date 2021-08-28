@@ -1,5 +1,8 @@
 const express = require( 'express' );
 const axios = require( 'axios' );
+const { 
+  grabUser 
+} = require( './logic' );
 
 const { 
   oauth2, 
@@ -26,21 +29,31 @@ app.use( require( 'express-session' )( session ) );
 const router = express.Router();
 // const router = require( './routes' );
 
-// test
-router.get( '/schmoomu', ( req, res ) => { 
-  res.writeHead( 200, { 'Content-Type': 'text/html' } );
-  res.write( '<h1>Hello from Schmoomu in tha house!</h1>' );
-  res.end();
-} );
-router.get( '/check-deux', ( req, res ) => res.json( { route: req.originalUrl } ) );
-router.post( '/check', ( req, res ) => res.json( { postBody: req.body } ) );
-
-router.get( '/', ( req, res ) => {
-  console.log( req.session.bearer_token );
-  if ( req.session.bearer_token ) {
-    // Redirect to react app
-    res.redirect( '/app' );
+// Verify some basics are working
+router.get( '/server', async ( req, res ) => {
+  if ( !req.session.bearer_token ) {
+    return res.redirect( '/login' );
   };
+
+  const user = await grabUser( req, res );
+  if ( !user.username ) {
+    return res.redirect( '/login' );
+  };
+
+  res.send( 
+    `<h1>Hello, ${ user.username }#${ user.discriminator }!</h1>` + 
+    `<img src=${ discord.cdn }/avatars/${ user.id }/${ user.avatar }?size=512">` 
+  );
+} );
+
+router.get( '/login', ( req, res ) => {
+  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
+  res.redirect( `${ discord.api }oauth2/authorize` +
+    `?client_id=${ oauth2.client_id }` +
+    `&redirect_uri=${ encodeURIComponent( redirectUrl ) }` +
+    `&response_type=code` +
+    `&scope=${ encodeURIComponent( oauth2.scopes.join( ' ' ) ) }` 
+  );
 } );
 
 router.get( '/login/callback', async ( req, res ) => {
@@ -57,11 +70,11 @@ router.get( '/login/callback', async ( req, res ) => {
     code: accessCode, 
     redirect_uri: redirectUrl, 
     scope: 'identify' // not needed
-  };    
+  };
 
   try {
     const json = ( await axios.post( 
-      'https://discord.com/api/oauth2/token', 
+      discord.api + 'oauth2/token', 
       new URLSearchParams( data ), 
       { headers: { 
         'Content-Type' : 'application/x-www-form-urlencoded' 
@@ -69,36 +82,24 @@ router.get( '/login/callback', async ( req, res ) => {
     ) ).data;
     req.session.bearer_token = json.access_token;
   } catch ( err ) {
-    console.log( 'err: ', err );
+    console.error( 'err: ', err );
   };
-
-  console.log( 'redirecting back home - login successful' );
+  // Redirect to React app
   res.redirect( '/app' );
 } );
 
-router.get( '/login', ( req, res ) => {
-  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
-  res.redirect( `${ discord.api }oauth2/authorize` +
-    `?client_id=${ oauth2.client_id }` +
-    `&redirect_uri=${ encodeURIComponent( redirectUrl ) }` +
-    `&response_type=code` +
-    `&scope=${ encodeURIComponent( oauth2.scopes.join( ' ' ) ) }` 
-  );
-} );
-
 router.get( '/logout', ( req, res ) => {
-    // @TODO delete the bearer token somehow
-    // req.session.bearer_token
+    req.session.bearer_token = null;
     res.redirect( '/' );
 } );
 
 router.get( '/add-bot', ( req, res ) => {
   const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
-  res.redirect( `${ discord.api }oauth2/authorize` +
-    `?client_id=${ oauth2.client_id }` +
-    '&scope=bot' +
-    '&permissions=268436496' +
-    `&guild_id=${ guild.id }` +
+  res.redirect( `${ discord.api }oauth2/authorize` + 
+    `?client_id=${ oauth2.client_id }` + 
+    '&scope=bot' + 
+    '&permissions=139988565879' + 
+    `&guild_id=${ guild.id }` + 
     '&disable_guild_select=false' 
   );
 } );
