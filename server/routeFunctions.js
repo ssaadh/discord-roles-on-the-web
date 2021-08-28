@@ -62,34 +62,27 @@ const postProcess = async ( req, res ) => {
     res.status( 401 );
     return;
   };
-  console.log( 'Routing /processing' );
+  let { userId, add, remove } = req.body;
+  add = add ? add : [];
+  remove = remove ? remove : [];
 
-  const { userId, add, remove } = req.body;
-  if ( adding.type != 'json' ) {
-    console.error( 'Bad data: ' + adding.type );
-    res.status( 400 ); // @TODO
-  };
-
-  // @TODO block roles
-
-  if ( add.length === 0 && remove.length === 0 ) {
-    res.status( 403 ); // @TODO
-    return;
-  };  
-
-  for ( const role of add ) {
-    console.log( 'adding meow' );
-    await wait( 1000 );
-    await addRole( role.id );
+  // Verify it is the same user
+  const userInfo = await getDiscordUser( req.session.bearer_token );
+  if ( userInfo && ( userInfo.id != userId ) ) {
+    console.error( '/process -- user id not matching for' );
+    console.error( 'userInfo.id', userInfo.id );
+    console.error( 'userId', userId );
+    res.sendStatus( 401 ); return;
   };
   
-  for ( const role of remove ) {
-    console.log( 'removing meow' );
-    await wait( 1000 );
-    await deleteRole( role.id );
+  if ( add.length === 0 && remove.length === 0 ) {
+    res.sendStatus( 403 ); return; // @TODO
   };
 
-  res.status( 200 );
+  const obj = returnObj( userId );
+  obj.add = await goThroughRoles( add, addRole, obj.add, userId );
+  obj.remove = await goThroughRoles( remove, deleteRole, obj.remove, userId );
+  res.json( obj );
 };
 
 module.exports = {
