@@ -7,20 +7,25 @@ const {
 } = require( './config.json' );
 
 const { 
-  notionCategories, 
-  notionRoles, 
   addNotionCategoriesToRoles 
 } = require( './notion' );
 
-const grabRoles = async () => {
-  let response = await axios.get( 
-    DISCORD_API + 'guilds/' + guild.id + '/roles', {
-      headers: {
-        'Authorization': 'Bot ' + bot.token
-      }
-    } 
-  );
 
+const grabRoles = async () => {
+  let response;
+  try {
+    response = await axios.get( 
+      discord.api + 'guilds/' + guild.id + '/roles', {
+        headers: {
+          'Authorization': 'Bot ' + bot.token
+        }
+      } 
+    );
+  } catch ( err ) {
+    console.error( 'discord guild roles fail, status', err.response.status );
+    console.error( 'discord guild roles fail, data', err.response.data );
+    return false;
+  };
   const json = response.data;
   return json.map( solo => {
     return {
@@ -31,45 +36,55 @@ const grabRoles = async () => {
   } );
 };
 
+const getDiscordUser = async ( bearerToken ) => {
+  let user;
+  try {
+    user = await axios.get( discord.api + 'users/@me', {
+      headers: {
+        'Authorization': 'Bearer ' + bearerToken 
+      }
+    } );
+  } catch ( err ) {
+    console.error( 'discord user fail, status', err.response.status );
+    console.error( 'discord user fail, data', err.response.data );
+    return false;
+  };
+  return user.data;
+};
+
+const getDiscordUserGuilds = async ( bearerToken ) => {
+  let guilds;
+  try {
+    guilds = await axios.get( discord.api + 'users/@me/guilds', {
+      headers: {
+        'Authorization': 'Bearer ' + bearerToken
+      }
+    } );
+    if ( guilds.status === 401 ) {      
+      return false;
+    };
+  } catch ( err ) {
+    console.error( 'discord user guild fail, status', err.response.status );
+    console.error( 'discord user guild fail, data', err.response.data );
+    return false;
+  };
+  return guilds.data;
+};
+
 const grabUser = async ( req, res ) => {
-  // const token = req.session.bearer_token || '';
-  const token = req.session.bearer_token;
-  console.log( token );
-
-  const user = await axios.get( discord.api + 'users/@me', {
-    headers: {
-      'Authorization': 'Bearer ' + token
-    }
-  } );
-  if ( user.status === 401 ) {
-    res.status( 401 );
-    res.redirect( '/auth-mistake' );
-  };
-
-  const guilds = await axios.get( discord.api + 'users/@me/guilds', {
-    headers: {
-      'Authorization': 'Bearer ' + token
-    }
-  } )
-  if ( guilds.status === 401 ) {
-    res.status( 401 );
-  };
-
-  const userInfo = user.data;
-  const guildInfo = guilds.data;
 
   const isAZoomer = ( guildsArray, guildId ) => 
     guildsArray.filter( guild => guild[ 'id' ] === guildID ).length > 0;
+  const user = await getDiscordUser( req.session.bearer_token );
+  const guilds = await getDiscordUserGuilds( req.session.bearer_token );
 
-  const userObj = {
-    id: userInfo.id, 
-    username: userInfo.username, 
-    avatar: userInfo.avatar, 
-    discriminator: userInfo.discriminator, 
     isAZoomer: isAZoomer( guilds, guild.id ) 
+  return {
+    id: user.id, 
+    username: user.username, 
+    discriminator: user.discriminator, 
+    avatar: user.avatar, 
   };
-
-  return JSON.stringify( userObj );
 };
 
 const mergeRoles = async ( rolesArr = [] ) => {
@@ -84,6 +99,5 @@ const mergeRoles = async ( rolesArr = [] ) => {
 
 module.exports = { 
   mergeRoles, 
-  grabRoles, 
-  grabUser 
+  grabUser, 
 };
