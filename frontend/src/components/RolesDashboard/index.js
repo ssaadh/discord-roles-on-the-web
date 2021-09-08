@@ -65,21 +65,21 @@ function Roles() {
       !inner.find( solo => han.name === solo.name ) 
     );
 
+  const reset = async ( theUser = user ) => {
+    setAdd( [] );
+    setRemove( [] );
+    await fetchSetUserRoles( theUser.id );
+  };
+
   const handleSubmit = async ( e ) => {
-    e.preventDefault();
     const result = await axios.post( '/api/process', { 
       userId: user.id, 
       add, 
       remove 
     } );
     if ( result.status === 200 ) {
-      console.log( 'successfully processed' );  
-
       // Reset
-      setAdd( [] );
-      setRemove( [] );
-      await fetchUserRoles();
-
+      await reset();
       setSubmitted( true );
       setTimeout( () => 
         setSubmitted( false ), 6000 
@@ -88,14 +88,15 @@ function Roles() {
       const status = result.status ? result.status : 'Unknown :/';
       setErr( status );
       setTimeout( () => 
-        setErr( false ), 6000 
+        setErr( false ), 4000 
       );
-    }
+    };
   };
 
-  const handleCancel = ( e ) => {
-    e.preventDefault();
-    window.location.reload();
+  const handleCancel = async ( e ) => {
+    setLoading( true );
+    await reset();
+    setLoading( false );
   };
 
   const handleAddRole = ( role ) =>
