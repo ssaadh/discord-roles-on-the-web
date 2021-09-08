@@ -1,15 +1,19 @@
 import React from "react";
 
-function Role( { id, name, color, category, onClick } ) {
+function Role( { id, name, description, color, category, onClick } ) {
   return ( 
-    <div 
-      className={ `role ${ category }-role` }
-      style={ { borderColor: color, backgroundColor: color } } 
-      id={ id } 
-      onClick={ onClick } 
-    >
-      { name }
-    </div>          
+    <div>
+      <div 
+        className={ `role ${ category }-role` }
+        style={ { borderColor: color, backgroundColor: color } } 
+        id={ id } 
+        onClick={ onClick } 
+      >
+        { name }
+      </div>
+      { description }
+    </div>
+
   );
 };
 

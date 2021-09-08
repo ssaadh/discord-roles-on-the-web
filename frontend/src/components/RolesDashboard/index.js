@@ -1,14 +1,16 @@
-/* eslint-disable react/jsx-no-target-blank */
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../config/axiosInstance";
 
 import Header from "../Shared/Header";
 import Category from "./Category";
 
+import userInstance from "../../config/userInstance";
+
 function Roles() {
-  const [ user, setUser ] = useState( null );
+  const [ user, setUser ] = useState( userInstance );
   const [ usersRoles, setUsersRoles ] = useState( [] );
 
+  const [ all, setAll ] = useState( [] );
   const [ roles, setRoles ] = useState( [] );
   const [ cats, setCats ] = useState( [] );
 
@@ -20,41 +22,48 @@ function Roles() {
   const [ err, setErr ] = useState( true );
 
   useEffect( () => {
+    const fetchData = async () => {
+      const fetchUser = ( await
+        axios.get( '/api/user' )
+      ).data;
+      setUser( fetchUser );
+      
+      if ( fetchUser && fetchUser.id ) {
+        const fetchCats = ( await
+          axios.get( '/notion/categories' )
+        ).data;
+        setCats( fetchCats );
+
+        const fetchRoles = ( await
+          axios.get( '/api/roles' )
+        ).data;
+        setAll( fetchRoles );
+        setLoading( false );
+      };
+
+      await fetchSetUserRoles( fetchUser.id );
+    };
+
     fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [] );
 
-  const fetchData = async () => {
-    const fetchUser = ( await
-      axios.get( '/api/user' )
-    ).data;
-    setUser( fetchUser );
-    
-    const fetchCats = ( await
-      axios.get( '/notion/categories' )
-    ).data;
-    setCats( fetchCats );
+  useEffect( () => { 
+    setRoles( availableRoles() );    
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ usersRoles ] );
 
-    const fetchRoles = ( await
-      axios.get( '/roles' )
-    ).data;
-    setRoles( fetchRoles );
-    
-    await fetchUserRoles();
-    // const fetchUsersRoles = ( await
-    //   axios.get( `/api/user-roles/${ fetchUser.id }` )
-    // ).data;
-    // setUsersRoles( fetchUsersRoles );
-
-    setLoading( false );
-  };
-
-  const fetchUserRoles = async () => {
+  const fetchSetUserRoles = async ( userId ) => {
+    if ( !userId ) { return false; };
     const fetch = ( await
-      axios.get( `/api/user-roles/${ user.id }` )
+      axios.get( `/api/user-roles/${ userId }` )
     ).data;
     setUsersRoles( fetch );
   };
+
+  const availableRoles = ( outer = all, inner = usersRoles ) => 
+    outer.filter( han => 
+      !inner.find( solo => han.name === solo.name ) 
+    );
 
   const handleSubmit = async ( e ) => {
     e.preventDefault();
@@ -97,7 +106,9 @@ function Roles() {
 
   return (
   <div className="container">
-    <Header />
+    <Header 
+      user={ user } 
+    />
     <div className="section">
       
       { submitted && 
@@ -112,7 +123,7 @@ function Roles() {
       }
 
       <h4>
-        Your Channel & Role Options, { user.name } 
+        Your Channel & Role Options, { user && user.username } 
       </h4>
       <div 
         id="controls"
