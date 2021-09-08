@@ -6,6 +6,8 @@ import {
   Link
 } from "react-router-dom";
 
+import "./App.css";
+
 import Home from "./components/Home";
 import Error from "./components/Error";
 
@@ -25,7 +27,7 @@ function App() {
               <Link to="/app">Dashboard</Link>
             </li>
             <li>
-              <Link to="/channels">Channels</Link>
+              <Link to="/roles">Channels/Roles</Link>
             </li>
           </ul>
         </nav>
@@ -36,13 +38,13 @@ function App() {
           <Route path="/app">
             <User />
           </Route>
-          <Route path="/channels">
+          <Route path="/roles">
             <Roles />
           </Route>
           <Route path="/">
             <Home />
           </Route>
-          <Route path="/a-mistake">
+          <Route path="/an-error">
             <Error />
           </Route>
         </Switch>

@@ -2,10 +2,11 @@ import React, { useEffect } from "react";
 
 function Error( props ) {
   useEffect( () => { 
-      setTimeout( () => 
-        props.history.push( '/' ), 6000 
-      );
-  } );
+    setTimeout( () => 
+      props.history.push( '/' ), 6000 
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [] );
 
   return (
     <div>
