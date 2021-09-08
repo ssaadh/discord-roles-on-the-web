@@ -16,10 +16,13 @@ function Roles() {
 
   const [ add, setAdd ] = useState( [] );
   const [ remove, setRemove ] = useState( [] );
+  const [ results, setResults ] = useState( false );
+  const [ success, setSuccess ] = useState( false );
+  const [ error, setError ] = useState( false );
 
   const [ loading, setLoading ] = useState( true );
-  const [ submitted, setSubmitted ] = useState( true );
-  const [ err, setErr ] = useState( true );
+  const [ submitted, setSubmitted ] = useState( false );
+  const [ err, setErr ] = useState( false );
 
   useEffect( () => {
     const fetchData = async () => {
@@ -78,6 +81,16 @@ function Roles() {
       remove 
     } );
     if ( result.status === 200 ) {
+      setResults( result.data );
+      const rAdd = result.data.add
+      const rRemove = result.data.remove;
+      if ( rAdd.success.length > 0 || rRemove.success.length > 0 ) {
+        setSuccess( true );
+      };
+      if ( rAdd.error.length > 0 || rRemove.error.length > 0 ) {
+        setError( true );
+      };
+      
       // Reset
       await reset();
       setSubmitted( true );
@@ -114,9 +127,65 @@ function Roles() {
       
       { submitted && 
       <div>
-        Successfully submitted changes!
+          
+        { success && 
+        <div>          
+          <span>Successfully submitted changes:</span>
+          <div>
+          <ul>
+          { results.add.success.length > 0 &&
+          <>
+            { results.add.success.map( role => 
+              <li>
+                <span>Successfully added:</span> { role.name }
+              </li>
+            ) }
+            </>
+          }
+          { results.remove.success.length > 0 &&
+          <>
+            { results.remove.success.map( role => 
+              <li>
+                <span>Successfully removed:</span> { role.name }
+              </li>
+            ) }
+          </>
+          }
+          </ul>
+          </div>
+        </div>
+        }
+
+        { error && 
+        <div>
+          <span>There were submission errors:</span>
+          <div>
+          <ul>
+          { results.add.error.length > 0 &&
+          <>
+            { results.add.error.map( role => 
+              <li>
+                <span>Failed to add:</span> { role.name }
+              </li>
+            ) }
+            </>
+          }
+          { results.remove.error.length > 0 &&
+          <>
+            { results.remove.error.map( role => 
+              <li>
+                <span>Failed to remove:</span> { role.name }
+              </li>
+            ) }
+          </>
+          }
+          </ul>
+          </div>
+        </div>
+        }
       </div>
-      }
+    }
+
       { err && 
       <div>
         Sorry. An error occured. Got an HTTP Status Code of { err } 
