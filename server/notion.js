@@ -19,33 +19,46 @@ const checkNotionObject = ( obj ) =>
 const parseNotionDb = ( obj ) => {
   const arrMap = obj.results.map( solo => { 
     const props = solo.properties;
-    const catRoot = props.Tags;
-    const nameRoot = props.Name;
-    const colorRoot = props.hasOwnProperty( 'Color' ) ? props.Color : null;
 
+    const catRoot = props.Tags;
     const catObj = catRoot[ catRoot.type ];
     const category = checkNotionObject( catObj ) ? catObj.name : '';
+
+    const nameRoot = props.Name;
     const nameArr = nameRoot[ nameRoot.type ];
     const name = ( Array.isArray( nameArr ) && nameArr.length ) ? nameArr[ 0 ].plain_text : '';
 
+    const descriptionRoot = props.Description;
+    const descriptionArr = descriptionRoot[ descriptionRoot.type ];
+    const description = ( Array.isArray( descriptionArr ) && descriptionArr.length ) ? descriptionArr[ 0 ].plain_text : '';
+    
+    const colorRoot = props.hasOwnProperty( 'Color' ) ? props.Color : null;
     let color;
     if ( colorRoot !== null ) {
       const colorObj = colorRoot[ colorRoot.type ];
       color = checkNotionObject( colorObj ) ? colorObj.name : '';
     };
+    
+    const priorityRoot = props.hasOwnProperty( 'Priority' ) ? props.Priority : null;
+    let priority;
+    if ( priorityRoot !== null ) {
+      prioritySpecific = priorityRoot[ priorityRoot.type ];
+      priority = prioritySpecific ? prioritySpecific : 999;
+    };
+
     if ( category || name ) {
-      if ( colorRoot && color ) {
-        return { 
-          category, 
-          name, 
-          color 
-        };
-      } else {
-        return { 
-          category, 
-          name 
-        };
+      const obj = {
+        category, 
+        name, 
+        description 
       };
+      if ( colorRoot && color ) {
+        obj.color = color;
+      };
+      if ( priorityRoot && priority ) {
+        obj.priority = priority;
+      };
+      return obj;
     } else {
       return null;
     };
@@ -67,7 +80,8 @@ const notionCategories = async () => {
     database_id: notionConfig.role_categories 
   } );
 
-  return parseNotionDb( result );
+  const arr = parseNotionDb( result );
+  return arr.sort( ( a, b ) => a.priority - b.priority );
 };
 
 const addNotionCategoriesToRoles = async ( cats = [], roles = [] ) => {
@@ -86,7 +100,6 @@ const addNotionCategoriesToRoles = async ( cats = [], roles = [] ) => {
 // /roles
 const getNotionRoles = async ( req, res ) => {
   if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
-  
   const obj = await notionRoles();
   res.json( obj );
 };
