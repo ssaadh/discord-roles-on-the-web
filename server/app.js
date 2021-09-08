@@ -35,6 +35,20 @@ router.get( '/server', async ( req, res ) => {
   );
 } );
 
+router.get( '/check-auth', async ( req, res ) => {
+  console.log( 'check-auth' );
+  if ( req.session.bearer_token ) {
+    // const user = await grabUser( req, res );
+    // if ( user && user.hasOwnProperty( 'username' ) && user.username ) {
+      return res.status( 200 ).end(); return;
+    // } else {
+      // return res.status( 401 ).end(); return;
+    // };
+  // } else { 
+    return res.status( 401 ).end(); return;
+  };
+} );
+
 router.get( '/login', ( req, res ) => {
   const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
   res.redirect( `${ discord.api }oauth2/authorize` +
