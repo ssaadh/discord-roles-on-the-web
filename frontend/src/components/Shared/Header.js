@@ -1,7 +1,11 @@
 /* eslint-disable react/jsx-no-target-blank */
 import React from "react";
 
-function Header() {
+import catLogo from "../../images/zoomers-cat.jpg"
+
+function Header( { user } ) {
+  const { username, avatar, discriminator, id } = user;
+
   return (
   <div className="row" id="nav">
 
@@ -14,12 +18,13 @@ function Header() {
           aria-haspopup="true" aria-expanded="false" data-offset="-5,10">
         
         <h4 className="heading-text" id="username">Username</h4>
-        <img src="{ user.avatar }" className="heading-img rounded-circle" id="avatar-icon" alt="Avatar icon" />
-        <div className="card-image"><img src="{ user.avatar }" alt="User Avatar" /></div>
+        { avatar && <><img src={ 'https://cdn.discordapp.com/avatars/' + id + '/' + avatar + '.png' } className="heading-img rounded-circle" id="avatar-icon" alt="Avatar icon" />
+        <div className="card-image"><img src={ 'https://cdn.discordapp.com/avatars/' + id + '/' + avatar + '.png' } alt="User Avatar" /></div></>
+        }
         
         <div className="card-header">
-          <div className="card-title h5">@{ user.username }#{ user.discriminator }</div>
-          <div className="card-subtitle text-gray">ID: <code>{ user.id }</code><hr /></div>
+          <div className="card-title h5">@{ username }#{ discriminator }</div>
+          <div className="card-subtitle text-gray">ID: <code>{ id }</code><hr /></div>
         </div>
       </div>
 
@@ -38,7 +43,7 @@ function Header() {
     </div> {/* <-- div.offset-md-3 col-md-3 dropdown --> */}
 
     <div className="heading-block justify-content-center">
-      <img src="discord-small.png" className="rounded-circle" id="guild-icon" alt="Guild icon" />
+      <img src={ catLogo } className="rounded-circle" id="guild-icon" alt="Guild icon" />
     </div>
 
     <div className="heading-block justify-content-center">

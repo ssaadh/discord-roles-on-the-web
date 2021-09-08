@@ -1,47 +1,46 @@
 import React, { useState, useEffect } from "react";
+import axios from "../config/axiosInstance";
 
-function About() {
+import Header from "./Shared/Header";
+
+function User() {
   const [ user, setUser ] = useState( null );
   useEffect( () => {
     fetchData();
   }, [] );
 
   const fetchData = async () => {
-    const response = await (
-      await fetch( 'http://localhost:5000/user' )
-    ).json();
+    const response = (
+      await axios.get( '/user' )
+    ).data;
     setUser( response );
   };
 
   return (
-    <div class="card">
+    <div className="container">
+      <Header 
+        user={ user } 
+      />
+      <div class="card">
         <div class="card-image"><img src="{ user.avatarUrl(256) }" alt="User Avatar" /></div>
         <div class="card-header">
           <div class="card-title h5">@{ user.username }#{ user.discriminator }</div>
           <div class="card-subtitle text-gray">ID: <code>{ user.id }</code><hr /></div>
           <div class="card-body">
-            <strong>Is a bot?</strong> { user.bot ? 'Yes' : 'No' }<br />
-            <strong>Discord Nitro:</strong> { user.premiumType }<br />
-            
-            { ( user.userFlags.length > 0 ) &&
+            <h3>Guild Info</h3>
+            <strong>Nick:</strong> { user.nick }<br />
+            <strong>Joined Time:</strong> { user.joined }<br />            
+            { ( user.flags ) &&
             <>
-            <strong>Flags: </strong>
-              <ul>
-                { user.userFlags.map( f => ( 
-                  <li>{ f }</li> 
-                ) ) }
-              </ul>
+            <strong>Flag: </strong>
+                { user.flags }
             </>
               }
-
-            <hr />
-          </div>
-          <div class="card-footer">
-            <strong>Registered on:</strong> { user.createdAt.toUTCString() }<br />
           </div>
         </div>
+      </div>
     </div>
   );
 };
 
-export default About;
+export default User;
