@@ -7,8 +7,12 @@ const {
 } = require( './config.json' );
 
 const {
-  sleepy 
+  sleepy, 
 } = require( './utilities' );
+
+const { 
+  grabGuildUser 
+} = require( './logic' );
 
 // @TODO dont allow adding of privileged roles.
 // Cant add roles above you in priority any way
@@ -19,34 +23,24 @@ const blockedRoles = ( arr, blockedArr ) => {
 };
 
 const getDiscordUsersRoles = async ( userId ) => {
-  let result;
-  try {
-    result = await axios.get( discord.api + 'guilds/' + guild.id + '/members/' + userId,
-      {
-        headers: {
-          'Authorization': 'Bot ' + bot.token
-        }
-      } 
-    );
-  } catch ( err ) {
-    console.error( 'discord user\'s roles fail, status', err.response.status );
-    console.error( 'discord user\'s roles fail, data', err.response.data );
-    return false;
+  const result = await grabGuildUser( guild.id, userId );
+  if ( result ) {
+    return result.roles;
   };
-  return result;
+  return false;
 };
 
 const roleApi = ( guildId, userId ) => `guilds/${ guildId }/members/${ userId }/roles/`;
 
 const addRole = async ( userId, roleId ) => {
   try {
-    await axios.put( discord.api + roleApi( guild.id, userId ) + roleId, 
-    '', 
-    {
-      headers: {
-        'Authorization': 'Bot ' + bot.token
-      }
-    } );
+    await axios.put( 
+      discord.api + roleApi( guild.id, userId ) + roleId, 
+      '', 
+      { headers: {
+          'Authorization': 'Bot ' + bot.token
+      } } 
+    );
   } catch ( err ) {
     console.error( 'add role error status', err.response.status );
     console.error( 'add role error data', err.response.data );
@@ -57,12 +51,12 @@ const addRole = async ( userId, roleId ) => {
 
 const deleteRole = async ( userId, roleId ) => {
   try {
-    await axios.delete( discord.api + roleApi( guild.id, userId ) + roleId,
-    {
-      headers: {
-        'Authorization': 'Bot ' + bot.token
-      }
-    } );        
+    await axios.delete( 
+      discord.api + roleApi( guild.id, userId ) + roleId,
+      { headers: {
+          'Authorization': 'Bot ' + bot.token
+      } } 
+    );
   } catch ( err ) {
     console.error( 'remove role error status', err.response.status );
     console.error( 'remove role error data', err.response.data );

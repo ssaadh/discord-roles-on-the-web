@@ -75,11 +75,29 @@ const getDiscordUserGuilds = async ( bearerToken ) => {
   return guilds.data;
 };
 
+const grabGuildUser = async ( guildId, userId ) => {
+  let guildUser;
+  const fullUrl = `${ discord.api }guilds/${ guildId }/members/${ userId }`;
+  try {
+    guildUser = await axios.get( 
+      fullUrl, { headers: {
+        'Authorization': 'Bot ' + bot.token
+      } } 
+    );
+  } catch ( err ) {
+    return false;
+  };
+  return guildUser.data;
+};
 const grabUser = async ( req, res ) => {
   if ( !securityCheck( req.session.bearer_token, req.headers.bearer_token ) ) { res.status( 401 ).end(); return; }
 
   const user = await getDiscordUser( req.session.bearer_token );
-  const guilds = await getDiscordUserGuilds( req.session.bearer_token );
+  // const guilds = await getDiscordUserGuilds( req.session.bearer_token );
+  const guildUser = await grabGuildUser( 
+    guild.id, 
+    user.id 
+  );
 
   return {
     id: user.id, 
@@ -120,5 +138,6 @@ const filterRoles = async ( rolesArr = [] ) => {
 module.exports = { 
   filterRoles, 
   grabUser, 
-  getDiscordUser 
+  getDiscordUser, 
+  grabGuildUser 
 };
