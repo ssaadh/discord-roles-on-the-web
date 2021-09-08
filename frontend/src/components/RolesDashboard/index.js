@@ -112,11 +112,23 @@ function Roles() {
     setLoading( false );
   };
 
-  const handleAddRole = ( role ) =>
-    setAdd( prev => prev.push( role ) );
+  const handleAddRole = ( role ) => 
+    handleChange( roles, setRoles, setAdd, role );
+
+  const handleCancelAdd = ( role ) => 
+    handleChange( add, setAdd, setRoles, role );
 
   const handleRemoveRole = ( role ) => 
-    setRemove( prev => prev.push( role ) );
+    handleChange( usersRoles, setUsersRoles, setRemove, role );
+
+  const handleCancelRemove = ( role ) => 
+    handleChange( remove, setRemove, setUsersRoles, role );
+
+  const handleChange = ( arr, setArr, setOtherArr, roleId ) => {
+    setArr( prev => prev.filter( role => role.id !== roleId ) );
+    const role = all.find( role => role.id === roleId );
+    setOtherArr( prev => [ ...prev, role ] );
+  };
 
   return (
   <div className="container">
@@ -232,7 +244,7 @@ function Roles() {
       <Category 
         name="To Add" 
         roles={ add } 
-        handleRole={ handleRemoveRole } 
+        handleRole={ handleCancelAdd } 
         loading={ loading } 
       />
     {/* div.section */}
@@ -242,7 +254,7 @@ function Roles() {
       <Category 
         name="To Remove" 
         roles={ remove } 
-        handleRole={ handleAddRole } 
+        handleRole={ handleCancelRemove } 
         loading={ loading } 
       />
     {/* div.section */}
