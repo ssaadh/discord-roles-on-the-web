@@ -13,6 +13,7 @@ function Roles() {
   const [ all, setAll ] = useState( [] );
   const [ roles, setRoles ] = useState( [] );
   const [ cats, setCats ] = useState( [] );
+  const [ catRoles, setCatRoles ] = useState( [] );
 
   const [ add, setAdd ] = useState( [] );
   const [ remove, setRemove ] = useState( [] );
@@ -49,6 +50,24 @@ function Roles() {
 
     fetchData();
   }, [] );
+
+  useEffect( () => {
+    const filterRoles = ( roles, name ) => 
+      roles.filter( role => 
+        role.category === name 
+      );
+
+    const doCatRoles = () => {
+      const result = cats.map( solo => {        
+        const filterArr = filterRoles( roles, solo.name );
+        console.log( solo );
+        return { category: solo, roles: filterArr };
+      } );
+      setCatRoles( result );
+    };
+
+    doCatRoles();
+  }, [ roles, cats ] );
 
   useEffect( () => { 
     setRoles( availableRoles() );    
@@ -264,11 +283,12 @@ function Roles() {
 
     <div className="section">
     { 
-      cats.map( cat =>  ( 
+      ( catRoles.length > 0 ) && catRoles.map( ( theCatRoles, index ) =>  ( 
         <Category 
-          category={ cat }
-          name={ cat.name } 
-          roles={ roles } 
+          key={ index } 
+          name={ theCatRoles.category.name } 
+          description={ theCatRoles.category.description } 
+          roles={ theCatRoles.roles } 
           handleRole={ handleAddRole } 
           loading={ loading } 
         />
