@@ -8,6 +8,7 @@ const {
 
 const {
   sleepy, 
+  logDiscordErr 
 } = require( './utilities' );
 
 const { 
@@ -42,8 +43,7 @@ const addRole = async ( userId, roleId ) => {
       } } 
     );
   } catch ( err ) {
-    console.error( 'add role error status', err.response.status );
-    console.error( 'add role error data', err.response.data );
+    logDiscordErr( err, 'add role' );
     return false;
   };
   return true;
@@ -58,8 +58,7 @@ const deleteRole = async ( userId, roleId ) => {
       } } 
     );
   } catch ( err ) {
-    console.error( 'remove role error status', err.response.status );
-    console.error( 'remove role error data', err.response.data );
+    logDiscordErr( err, 'delete/remove roles' );
     return false;    
   };
   return true;

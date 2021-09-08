@@ -56,8 +56,12 @@ const getUsersRoles = async ( req, res ) => {
   };
 
   const result = await getDiscordUsersRoles( userId );
-  const roles = await filterRoles( result.data.roles );  
-  res.json( roles );
+  if ( result != false ) { 
+    const roles = await filterRoles( result );
+    res.json( roles );
+  } else {
+    return res.sendStatus( 418 ).end(); 
+  };
 };
 
 // /process
@@ -71,10 +75,8 @@ const postProcess = async ( req, res ) => {
   // Verify it is the same user
   const userInfo = await getDiscordUser( req.session.bearer_token );
   if ( userInfo && ( userInfo.id != userId ) ) {
-    console.error( '/process -- user id not matching for' );
-    console.error( 'userInfo.id', userInfo.id );
-    console.error( 'userId', userId );
-    res.sendStatus( 401 ); return;
+    console.error( `/process -- user id mismatch. userInfo id: ${ userInfo.id }, userId: ${ userId }` );
+    res.sendStatus( 401 ).end(); return;
   };
   
   if ( add.length === 0 && remove.length === 0 ) {

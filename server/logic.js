@@ -12,7 +12,8 @@ const {
 
 const {
   securityCheck, 
-  isGuildMember 
+  isGuildMember, 
+  logDiscordErr 
 } = require( './utilities' );
 
 const grabRoles = async () => {
@@ -25,8 +26,7 @@ const grabRoles = async () => {
       } } 
     );
   } catch ( err ) {
-    console.error( 'discord guild roles fail, status', err.response.status );
-    console.error( 'discord guild roles fail, data', err.response.data );
+    logDiscordErr( err, 'guild roles' );
     return false;
   };
   const json = response.data;
@@ -48,8 +48,7 @@ const getDiscordUser = async ( bearerToken ) => {
       } } 
     );
   } catch ( err ) {
-    console.error( 'discord user fail, status', err.response.status );
-    console.error( 'discord user fail, data', err.response.data );
+    logDiscordErr( err, 'user' );
     return false;
   };
   return user.data;
@@ -64,8 +63,7 @@ const getDiscordUserGuilds = async ( bearerToken ) => {
       } } 
     );
   } catch ( err ) {
-    console.error( 'discord user guild fail, status', err.response.status );
-    console.error( 'discord user guild fail, data', err.response.data );
+    logDiscordErr( err, 'user\'s guilds' );
     return false;
   };
   return guilds.data;
@@ -81,6 +79,7 @@ const grabGuildUser = async ( guildId, userId ) => {
       } } 
     );
   } catch ( err ) {
+    logDiscordErr( err, 'guild user' );
     return false;
   };
   return guildUser.data;
