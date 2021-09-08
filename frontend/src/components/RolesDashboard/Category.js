@@ -1,25 +1,31 @@
 import React, { useEffect, useState } from "react";
 import Role from "./Role";
 
-function Category( { name, roles, handleRole, loading } ) {
+function Category( { name, description, roles, handleRole, loading, filter } ) {
   const [ catRoles, setCatRoles ] = useState( [] );
   const cssName = name.trim().split( ' ' ).join( '-' ).toLowerCase();
 
   useEffect( () => {
-    firstRun();
+    prepRoles();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [] );
+  }, [ roles ] );
 
-  const firstRun = () => setCatRoles( filterCatRoles( name ) );
+  const firstRun = () => {
+    if ( name && Array.isArray( roles ) && roles.length > 0 ) {
+      if ( filter ) {
+        setCatRoles( filterRoles( roles, name ) );
+      } else if ( !filter ) {
+        setCatRoles( roles );
+      };
+    };
+  };
 
-  const filterCatRoles = ( name ) => { 
+  const filterRoles = ( roles, name ) => 
     roles.filter( role => 
       role.category === name
     );
-  };
 
   const handleCatRole = ( e ) => {
-    e.preventDefault();
     const id = e.target.id;
     const index = catRoles.findIndex( role => role.id === id );
     if ( index === -1 ) {
@@ -51,6 +57,7 @@ function Category( { name, roles, handleRole, loading } ) {
             { name } Channels
           </button>
         </h2>
+        <span>{ description }</span>
       </div>
       <div 
         id={ `collapse-${ cssName }-roles` }
@@ -58,11 +65,13 @@ function Category( { name, roles, handleRole, loading } ) {
       >
         { 
           <div className="card-body" id={ `${ cssName }-roles-container` }>
-            { catRoles.map( role => ( 
+            { Array.isArray( catRoles ) && catRoles.map( ( role, index ) => ( 
               <Role 
+                key={ index } 
                 category={ cssName } 
                 id={ role.id } 
                 name={ role.name } 
+                description={ role.description } 
                 color={ role.color } 
                 onClick={ handleCatRole } 
               />
