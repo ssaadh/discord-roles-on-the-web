@@ -16,7 +16,14 @@ const {
 } = require( './config.json' );
 
 const app = express();
-app.use( require( 'express-session' )( session ) );
+// app.use( require( 'express-session' )( session ) );
+app.use( require( 'cookie-session' )( {
+  keys: ["testie1", "testor2"],
+  secret: "testmexfortrixlol",
+  cookie: {
+    "maxAge": 24 * 60 * 60 * 1000 // a day
+  }
+} ) );
 const router = express.Router();
 
 // Verify some basics are working
@@ -41,22 +48,21 @@ router.get( '/server', async ( req, res ) => {
 } );
 
 router.get( '/check-auth', async ( req, res ) => {
-  console.log( 'check-auth' );
   if ( req.session.bearer_token ) {
-    // const user = await grabUser( req, res );
-    // if ( user && user.hasOwnProperty( 'username' ) && user.username ) {
+    const user = await grabUser( req, res );
+    if ( user && user.hasOwnProperty( 'username' ) && user.username ) {
       return res.status( 200 ).end(); return;
-    // } else {
-      // return res.status( 401 ).end(); return;
-    // };
-  // } else { 
+    } else {
+      return res.status( 401 ).end(); return;
+    };
+  } else { 
     return res.status( 401 ).end(); return;
   };
 } );
 
 router.get( '/login', ( req, res ) => {
-  // const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
-  const redirectUrl = site.app_url + oauth2.redirect_uri;
+  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
+  // const redirectUrl = site.app_url + oauth2.redirect_uri;
   const fullUrl = `${ discord.api }oauth2/authorize` +
     `?client_id=${ oauth2.client_id }` +
     `&redirect_uri=${ encodeURIComponent( redirectUrl ) }` +
@@ -73,8 +79,8 @@ router.get( '/login/callback', async ( req, res ) => {
     return res.send( 'No access code specified' );
   };
 
-  // const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
-  const redirectUrl = site.app_url + oauth2.redirect_uri;
+  const redirectUrl = req.protocol + '://' + req.get( 'host' ) + '/' + oauth2.redirect_uri;
+  // const redirectUrl = site.app_url + oauth2.redirect_uri;
   const data = {
     client_id: oauth2.client_id, 
     client_secret: oauth2.secret, 
