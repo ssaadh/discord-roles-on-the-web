@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+
 import axios from "../config/axiosInstance";
-import { useHistory } from 'react-router-dom';
+import useAuthed from "../config/customHooks"
 
 import catLogo from "../images/zoomers-cat.jpg"
 import smallDiscordLogo from "../images/discord-small.png"
@@ -10,21 +12,15 @@ function Home( props ) {
   const history = useHistory();
   const [ loggedIn, setLoggedIn ] = useState( false );
   const [ showContent, setShowContent ] = useState( false );
+  const authed = useAuthed();
 
   useEffect( () => { 
-    const checkIfLoggedIn = async () => {
-      const auth = await axios.get( '/check-auth' );
-      if ( auth.status === 200 ) {
-        setLoggedIn( true );
-      } else if ( auth.status === 401 ) {
-        setShowContent( true );
-      } else { 
-        setShowContent( true );
-      };
+    if ( authed === true ) {
+      setLoggedIn( true );
+    } else if ( authed === false ) {
+      setShowContent( true );
     };
-
-    checkIfLoggedIn();
-  }, [] );
+  }, [ authed ] );
 
   useEffect( () => { 
     if ( loggedIn ) history.push( '/roles' );
