@@ -14,6 +14,7 @@ function Roles() {
   const [ roles, setRoles ] = useState( [] );
   const [ cats, setCats ] = useState( [] );
   const [ catRoles, setCatRoles ] = useState( [] );
+  const [ runningBackRoles, setRunningBackRoles ] = useState( true );
 
   const [ add, setAdd ] = useState( [] );
   const [ remove, setRemove ] = useState( [] );
@@ -41,11 +42,11 @@ function Roles() {
         const fetchRoles = ( await
           axios.get( '/api/roles' )
         ).data;
-        setAll( fetchRoles );
+        setAll( fetchRoles );        
+        
+        await fetchSetUserRoles( fetchUser.id );
         setLoading( false );
       };
-
-      await fetchSetUserRoles( fetchUser.id );
     };
 
     fetchData();
@@ -60,7 +61,6 @@ function Roles() {
     const doCatRoles = () => {
       const result = cats.map( solo => {        
         const filterArr = filterRoles( roles, solo.name );
-        console.log( solo );
         return { category: solo, roles: filterArr };
       } );
       setCatRoles( result );
@@ -70,7 +70,9 @@ function Roles() {
   }, [ roles, cats ] );
 
   useEffect( () => { 
-    setRoles( availableRoles() );    
+    if ( runningBackRoles ) {
+      setRoles( availableRoles() );
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ usersRoles ] );
 
@@ -131,22 +133,34 @@ function Roles() {
     setLoading( false );
   };
 
-  const handleAddRole = ( role ) => 
-    handleChange( roles, setRoles, setAdd, role );
+  const handleAddRole = ( roleId ) => 
+    handleChange( roleId, setRoles, setAdd );
 
-  const handleCancelAdd = ( role ) => 
-    handleChange( add, setAdd, setRoles, role );
+  const handleCancelAdd = ( roleId ) => 
+    handleChange( roleId, setAdd, setRoles );
 
-  const handleRemoveRole = ( role ) => 
-    handleChange( usersRoles, setUsersRoles, setRemove, role );
+  const handleRemoveRole = ( roleId ) => {
+    function dontRedoRoles() {
+      Promise.resolve()
+        .then( () => setRunningBackRoles( false ) )
+        .then( () => { setUsersRoles( prev => prev.filter( role => role.id !== roleId ) ) } )
+        .then( () => setRunningBackRoles( true ) )
+    };
+    dontRedoRoles();
+    handleSecondHalfChange( roleId, setRemove );
+  };
 
-  const handleCancelRemove = ( role ) => 
-    handleChange( remove, setRemove, setUsersRoles, role );
+  const handleCancelRemove = ( roleId ) => 
+    handleChange( roleId, setRemove, setUsersRoles );
 
-  const handleChange = ( arr, setArr, setOtherArr, roleId ) => {
-    setArr( prev => prev.filter( role => role.id !== roleId ) );
+  const handleSecondHalfChange = ( roleId, setOtherArr ) => {
     const role = all.find( role => role.id === roleId );
     setOtherArr( prev => [ ...prev, role ] );
+  };
+
+  const handleChange = ( roleId, setArr, setOtherArr ) => {
+    setArr( prev => prev.filter( role => role.id !== roleId ) );
+    handleSecondHalfChange( roleId, setOtherArr );
   };
 
   return (
@@ -167,7 +181,7 @@ function Roles() {
           { results.add.success.length > 0 &&
           <>
             { results.add.success.map( role => 
-              <li>
+              <li key={ role.name }>
                 <span>Successfully added:</span> { role.name }
               </li>
             ) }
@@ -176,7 +190,7 @@ function Roles() {
           { results.remove.success.length > 0 &&
           <>
             { results.remove.success.map( role => 
-              <li>
+              <li key={ role.name }>
                 <span>Successfully removed:</span> { role.name }
               </li>
             ) }
@@ -195,7 +209,7 @@ function Roles() {
           { results.add.error.length > 0 &&
           <>
             { results.add.error.map( role => 
-              <li>
+              <li key={ role.name }>
                 <span>Failed to add:</span> { role.name }
               </li>
             ) }
@@ -204,7 +218,7 @@ function Roles() {
           { results.remove.error.length > 0 &&
           <>
             { results.remove.error.map( role => 
-              <li>
+              <li key={ role.name }>
                 <span>Failed to remove:</span> { role.name }
               </li>
             ) }
@@ -285,7 +299,7 @@ function Roles() {
     { 
       ( catRoles.length > 0 ) && catRoles.map( ( theCatRoles, index ) =>  ( 
         <Category 
-          key={ index } 
+          key={ theCatRoles.category.name + index } 
           name={ theCatRoles.category.name } 
           description={ theCatRoles.category.description } 
           roles={ theCatRoles.roles } 
